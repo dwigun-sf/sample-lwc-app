@@ -53,6 +53,7 @@
     },
     "repository": "dpalla/sample-lwc-app",
     "scripts": {
+        "start": "npm run serve",
         "build": "lwc-services build -m production",
         "build:development": "lwc-services build",
         "lint": "eslint ./src/**/*.js",
