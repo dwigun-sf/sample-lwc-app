@@ -1,4 +1,4 @@
-# sample-lwc-app
+# sample-lwc-app  
 
 Here will be some information about the app.
 
