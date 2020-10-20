@@ -1,0 +1,15 @@
+.card {
+    position: relative;
+    border: solid 1px #08ebfc;
+    border-radius: 4px;
+    display: inline-flex;
+    padding: 0 12px;
+}
+
+.card:hover {
+    position: relative;
+    border: solid 1px #caf509;
+    border-radius: 4px;
+    display: inline-flex;
+    padding: 0 12px;
+}
