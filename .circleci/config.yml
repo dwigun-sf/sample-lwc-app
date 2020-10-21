@@ -68,7 +68,7 @@ commands:
           name: Promote dev changes to stage
           command: |
             heroku pipelines:promote -a lwc-app-dev
-   stage-promotion:
+  prod-promotion:
     steps:
       - run:
           name: Promote dev changes to stage
@@ -120,6 +120,11 @@ jobs:
       - setup-heroku
       - stage-promotion
       - run-puppeteer-tests
+  lwc-prod-deploy:
+    executor: node-executor
+    steps:
+      - setup-heroku
+      - prod-promotion
 
 workflows:
   version: 2
@@ -138,7 +143,7 @@ workflows:
       - lwc-stage-deploy:
           requires:
             - lwc-dev-deploy
-      - lwc-stage-prod:
+      - lwc-prod-deploy:
           type: approval
           requires:
             - lwc-stage-deploy
