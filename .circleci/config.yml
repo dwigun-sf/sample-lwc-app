@@ -53,7 +53,7 @@ commands:
     steps:
       - install-heroku
       - setup-creds
-      - test-creds
+      - test-heroku
 
 jobs:
   lwc-app-build-and-run:
