@@ -3,6 +3,9 @@ executors:
     node-executor:
         docker:
             - image: circleci/node:12.18.3
+    terraform-executor:
+        docker:
+            - image: hashicorp/terraform:light
 commands:
     install-npm-dependencies:
         steps:
@@ -43,6 +46,15 @@ jobs:
             - run:
                   name: Run Unit tests
                   command: ./node_modules/.bin/jest
+    setup-heroku-environment:
+        executor: terraform-executor
+        steps:
+          - checkout
+          - run:
+              name: terraform init & plan
+              command: |
+                terraform init
+                terraform apply --auto-approve
 workflows:
     version: 2
     lwc-build-execute:
@@ -51,3 +63,8 @@ workflows:
             - lwc-app-test:
                   requires:
                       - lwc-app-build-and-run
+    lwc-deploy:
+        jobs:
+          - setup-heroku-environment
+        requires:
+          - lwc-build-execute
