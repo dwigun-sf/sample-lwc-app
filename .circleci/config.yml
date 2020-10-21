@@ -33,6 +33,6 @@ jobs:
                   command: npm run serve
 workflows:
     version: 2
-    'lwc-build-execute':
+    lwc-build-execute:
         jobs:
             - lwc-app-build-and-run
