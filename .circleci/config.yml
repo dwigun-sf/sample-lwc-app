@@ -31,6 +31,7 @@ jobs:
             - run:
                   name: 'Running lwc-app'
                   command: npm run serve
+                  background: true
 workflows:
     version: 2
     lwc-build-execute:
