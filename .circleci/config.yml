@@ -65,6 +65,4 @@ workflows:
                       - lwc-app-build-and-run
     lwc-deploy:
         jobs:
-          - setup-heroku-environment:
-              requires:
-                - lwc-build-execute
+          - setup-heroku-environment
