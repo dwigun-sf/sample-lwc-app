@@ -59,6 +59,7 @@ commands:
       - run:
           name: Install app to LWC develop environment
           command: |
+            heroku login
             heroku git:remote -a lwc-app-dev
             git push heroku master
   stage-promotion:
