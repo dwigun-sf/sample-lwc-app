@@ -104,6 +104,7 @@ jobs:
     executor: node-executor
     steps:
       - setup-heroku
+      - checkout
       - dev-deploy
       - run-puppeteer-tests
   lwc-stage-deploy:
