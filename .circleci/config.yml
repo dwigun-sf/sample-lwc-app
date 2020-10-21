@@ -54,6 +54,25 @@ commands:
       - install-heroku
       - setup-creds
       - test-heroku
+  dev-deploy:
+    steps:
+      - run:
+          name: Install app to LWC develop environment
+          command: |
+            heroku git:remote -a lwc-app-dev
+            git push heroku master
+  stage-promotion:
+    steps:
+      - run:
+          name: Promote dev changes to stage
+          command: |
+            heroku pipelines:promote -a lwc-app-staging
+  run-puppeteer-tests:
+    steps:
+      - run:
+          name: Running puppeteer tests
+          command: |
+            sleep 5
 
 jobs:
   lwc-app-build-and-run:
@@ -85,6 +104,14 @@ jobs:
     executor: node-executor
     steps:
       - setup-heroku
+      - dev-deploy
+      - run-puppeteer-tests
+  lwc-stage-deploy:
+    executor: node-executor
+    steps:
+      - setup-heroku
+      - stage-promotion
+      - run-puppeteer-tests
 
 workflows:
   version: 2
@@ -100,3 +127,6 @@ workflows:
       - lwc-dev-deploy:
           requires:
             - setup-provisioner-environment
+      - lwc-stage-deploy:
+          requires:
+            - lwc-dev-deploy
