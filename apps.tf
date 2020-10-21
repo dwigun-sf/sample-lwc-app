@@ -11,7 +11,6 @@ resource "heroku_app" "lwc-app-dev" {
     name = "sfdc-digital-nonprod"
   }
 
-  buildpacks = var.heroku_app_buildpacks
 }
 
 resource "heroku_app" "lwc-app-staging" {
@@ -26,7 +25,6 @@ resource "heroku_app" "lwc-app-staging" {
     name = "sfdc-digital-nonprod"
   }
 
-  buildpacks = var.heroku_app_buildpacks
 }
 
 resource "heroku_app" "lwc-app-production" {
@@ -41,7 +39,6 @@ resource "heroku_app" "lwc-app-production" {
     name = "sfdc-digital-nonprod"
   }
 
-  buildpacks = var.heroku_app_buildpacks
 }
 
 

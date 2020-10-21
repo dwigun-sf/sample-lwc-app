@@ -1,99 +1,101 @@
 version: 2.1
 executors:
-    node-executor:
-        docker:
-            - image: circleci/node:12.18.3
-    terraform-executor:
-        docker:
-            - image: hashicorp/terraform:light
+  node-executor:
+    docker:
+      - image: circleci/node:12.18.3
+  terraform-executor:
+    docker:
+      - image: hashicorp/terraform:light
 commands:
-    install-npm-dependencies:
-        steps:
-            - checkout
-            - restore_cache:
-                  name: Restore NPM cache
-                  keys:
-                      - release-deps-{{ checksum "package-lock.json" }}
-            - run:
-                  name: Install Dependencies
-                  command: npm install
-            - save_cache:
-                  name: Save NPM cache
-                  key: release-deps-{{ checksum "package-lock.json" }}
-                  paths:
-                      - node_modules
-    install-heroku:
-      steps:
-        - run:
-            name: Install heroku and setup login
-            command: |
-              curl https://cli-assets.heroku.com/install.sh | sh
-    setup-creds:
-      steps:
-        - run:
-           name: Setup Heroku credentials
-           command: |
-             cat \<<EOF > ~/.netrc
-              machine git.heroku.com
-              login $HEROKU_EMAIL_ACCOUNT
-             EOF
-    test-heroku:
-      steps:
-        - run:
-            name: Run Heroku command
-            command: heroku apps
+  install-npm-dependencies:
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore NPM cache
+          keys:
+            - release-deps-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install Dependencies
+          command: npm install
+      - save_cache:
+          name: Save NPM cache
+          key: release-deps-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+  setup-terraform:
+    steps:
+      - run:
+          name: Apply terraform provisioner configuration
+          command: |
+            terraform init
+            terraform apply -var heroku_api_key=$HEROKU_API_KEY -var heroku_account_email=$HEROKU_EMAIL_ACCOUNT --auto-approve
+  install-heroku:
+    steps:
+      - run:
+          name: Install heroku and setup login
+          command: |
+            curl https://cli-assets.heroku.com/install.sh | sh
+  setup-creds:
+    steps:
+      - run:
+          name: Setup Heroku credentials
+          command: |
+            cat \<<EOF > ~/.netrc
+             machine git.heroku.com
+             login $HEROKU_EMAIL_ACCOUNT
+            EOF
+  test-heroku:
+    steps:
+      - run:
+          name: Run Heroku command
+          command: heroku apps
+  setup-heroku:
+    - install-heroku
+    - setup-creds
+    - test-creds
 
 jobs:
-    lwc-app-build-and-run:
-        executor: node-executor
-        steps:
-            - checkout
-            - install-npm-dependencies
-            - run:
-                  name: 'Building lwc-app'
-                  command: npm run build
-            - run:
-                  name: 'Running lwc-app'
-                  command: npm run serve
-                  background: true
-    lwc-app-test:
-        executor: node-executor
-        steps:
-            - checkout
-            #        - run:
-            #            name: Install npm dependencies
-            #            command: npm install
-            - install-npm-dependencies
-            - run:
-                  name: Run Unit tests
-                  command: ./node_modules/.bin/jest
-    setup-provisioner-environment:
-        executor: terraform-executor
-        steps:
-          - checkout
-          - run:
-              name: terraform init & plan
-              command: |
-                terraform init
-                terraform apply -var heroku_api_key=$HEROKU_API_KEY -var heroku_account_email=$HEROKU_EMAIL_ACCOUNT --auto-approve
-    setup-heroku:
-      executor: node-executor
-      steps:
-        - install-heroku
-        - setup-creds
-        - test-heroku
+  lwc-app-build-and-run:
+    executor: node-executor
+    steps:
+      - checkout
+      - install-npm-dependencies
+      - run:
+          name: 'Building lwc-app'
+          command: npm run build
+      - run:
+          name: 'Running lwc-app'
+          command: npm run serve
+          background: true
+  lwc-app-test:
+    executor: node-executor
+    steps:
+      - checkout
+      - install-npm-dependencies
+      - run:
+          name: Run Unit tests
+          command: ./node_modules/.bin/jest
+  setup-provisioner-environment:
+    executor: terraform-executor
+    steps:
+      - checkout
+      - setup-terraform
+  lwc-dev-deploy:
+    executor: node-executor
+    steps:
+      - setup-heroku
 
 workflows:
-    version: 2
-    lwc-build-execute:
-        jobs:
+  version: 2
+  lwc-build-execute:
+    jobs:
+      - lwc-app-build-and-run
+      - lwc-app-test:
+          requires:
             - lwc-app-build-and-run
-            - lwc-app-test:
-                  requires:
-                      - lwc-app-build-and-run
-            - setup-provisioner-environment:
-                  requires:
-                    - lwc-app-test
-            - setup-heroku:
-                  requires:
-                    - setup-provisioner-environment
+      - setup-provisioner-environment:
+          requires:
+            - lwc-app-test
+      - lwc-dev-deploy:
+          requires:
+            - setup-provisioner-environment

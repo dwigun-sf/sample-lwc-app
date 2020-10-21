@@ -5,8 +5,5 @@ variable "heroku_develop_app" {}
 variable "heroku_staging_app" {}
 variable "heroku_production_app" {}
 variable "heroku_region" {}
-variable "heroku_app_buildpacks" {
-  type = list
-}
 
 

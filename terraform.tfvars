@@ -8,8 +8,3 @@ heroku_production_app = "lwc-app-prod"
 
 heroku_region = "us"
 
-heroku_app_buildpacks = [
-  "heroku/node"
-]
-
-
