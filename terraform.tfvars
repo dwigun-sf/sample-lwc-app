@@ -1,6 +1,3 @@
-
-heroku_account_email = "bpoludasu@salesforce.com"
-
 heroku_pipeline_name = "lwc-app-pipeline"
 
 heroku_develop_app = "lwc-app-dev"

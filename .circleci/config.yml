@@ -22,6 +22,36 @@ commands:
                   key: release-deps-{{ checksum "package-lock.json" }}
                   paths:
                       - node_modules
+    install-heroku:
+      steps:
+        - restore_cache:
+            name: Restore install cache
+            keys:
+              - heroku-install
+        - run:
+            name: Install heroku and setup login
+            command: |
+              curl https://cli-assets.heroku.com/install.sh | sh
+        - save_cache:
+            name: Save heroku install path
+            key: heroku-install
+            paths:
+              - /usr/local/lib/heroku
+    setup-creds:
+      steps:
+        - run:
+           name: Setup Heroku credentials
+           command: |
+             cat \<<EOF > ~/.netrc
+              machine git.heroku.com
+              login $HEROKU_EMAIL_ACCOUNT
+             EOF
+    test-heroku:
+      steps:
+        - run:
+            name: Run Heroku command
+            command: heroku apps
+
 jobs:
     lwc-app-build-and-run:
         executor: node-executor
@@ -46,7 +76,7 @@ jobs:
             - run:
                   name: Run Unit tests
                   command: ./node_modules/.bin/jest
-    setup-heroku-environment:
+    setup-provisioner-environment:
         executor: terraform-executor
         steps:
           - checkout
@@ -54,7 +84,14 @@ jobs:
               name: terraform init & plan
               command: |
                 terraform init
-                terraform apply -var heroku_api_key=$HEROKU_API_KEY --auto-approve
+                terraform apply -var heroku_api_key=$HEROKU_API_KEY -var heroku_account_email=$HEROKU_EMAIL_ACCOUNT --auto-approve
+    setup-heroku:
+      executor: node-executor
+      steps:
+        - install-heroku
+        - setup-creds
+        - test-heroku
+
 workflows:
     version: 2
     lwc-build-execute:
@@ -63,6 +100,9 @@ workflows:
             - lwc-app-test:
                   requires:
                       - lwc-app-build-and-run
-            - setup-heroku-environment:
+            - setup-provisioner-environment:
                   requires:
                     - lwc-app-test
+    lwc-deploy-dev:
+      jobs:
+        - setup-heroku
