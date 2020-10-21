@@ -43,6 +43,7 @@ commands:
             cat \<<EOF > ~/.netrc
              machine git.heroku.com
              login $HEROKU_EMAIL_ACCOUNT
+             password $HEROKU_API_KEY
             EOF
   test-heroku:
     steps:
