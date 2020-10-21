@@ -103,6 +103,6 @@ workflows:
             - setup-provisioner-environment:
                   requires:
                     - lwc-app-test
-            - setup-heroku
+            - setup-heroku:
                   requires:
                     - setup-provisioner-environment
