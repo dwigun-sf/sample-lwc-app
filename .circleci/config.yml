@@ -125,6 +125,10 @@ jobs:
     steps:
       - setup-heroku
       - prod-promotion
+  release-to-prod:
+    executor: node-executor
+    steps:
+      - run: echo "Release to Prod Approved"
 
 workflows:
   version: 2
@@ -143,7 +147,10 @@ workflows:
       - lwc-stage-deploy:
           requires:
             - lwc-dev-deploy
-      - lwc-prod-deploy:
+      - release-to-prod:
           type: approval
           requires:
             - lwc-stage-deploy
+      - lwc-prod-deploy:
+          requires:
+            - release-to-prod
