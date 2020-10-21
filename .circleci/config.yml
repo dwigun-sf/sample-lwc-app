@@ -24,19 +24,10 @@ commands:
                       - node_modules
     install-heroku:
       steps:
-        - restore_cache:
-            name: Restore install cache
-            keys:
-              - heroku-install
         - run:
             name: Install heroku and setup login
             command: |
               curl https://cli-assets.heroku.com/install.sh | sh
-        - save_cache:
-            name: Save heroku install path
-            key: heroku-install
-            paths:
-              - /usr/local/lib/heroku
     setup-creds:
       steps:
         - run:
