@@ -1,0 +1,15 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:12.18.3
+
+    steps:
+      - checkout
+      - run: npm install
+
+workflows:
+  version: 2
+  "Install NPM dependencies":
+    jobs:
+      - build
