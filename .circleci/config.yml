@@ -50,9 +50,10 @@ commands:
           name: Run Heroku command
           command: heroku apps
   setup-heroku:
-    - install-heroku
-    - setup-creds
-    - test-creds
+    steps:
+      - install-heroku
+      - setup-creds
+      - test-creds
 
 jobs:
   lwc-app-build-and-run:
