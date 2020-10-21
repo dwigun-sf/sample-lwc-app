@@ -3,9 +3,8 @@ executors:
     node-executor:
         docker:
             - image: circleci/node:12.18.3
-jobs:
+commands:
     install-npm-dependencies:
-        executor: node-executor
         steps:
             - checkout
             - restore_cache:
@@ -20,6 +19,7 @@ jobs:
                   key: release-deps-{{ checksum "package-lock.json" }}
                   paths:
                       - node_modules
+jobs:
     lwc-app-build-and-run:
         executor: node-executor
         steps:
