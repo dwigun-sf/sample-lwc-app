@@ -54,7 +54,7 @@ jobs:
               name: terraform init & plan
               command: |
                 terraform init
-                terraform apply --auto-approve
+                terraform apply -var heroku_api_key=$HEROKU_API_KEY --auto-approve
 workflows:
     version: 2
     lwc-build-execute:
@@ -63,6 +63,6 @@ workflows:
             - lwc-app-test:
                   requires:
                       - lwc-app-build-and-run
-    lwc-deploy:
-        jobs:
-          - setup-heroku-environment
+            - setup-heroku-environment:
+                  requires:
+                    - lwc-app-test
