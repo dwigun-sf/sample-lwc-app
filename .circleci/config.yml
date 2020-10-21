@@ -32,8 +32,22 @@ jobs:
                   name: 'Running lwc-app'
                   command: npm run serve
                   background: true
+    lwc-app-test:
+        executor: node-executor
+        steps:
+            - checkout
+            #        - run:
+            #            name: Install npm dependencies
+            #            command: npm install
+            - install-npm-dependencies
+            - run:
+                  name: Run Unit tests
+                  command: ./node_modules/.bin/jest
 workflows:
     version: 2
     lwc-build-execute:
         jobs:
             - lwc-app-build-and-run
+            - lwc-app-test:
+                  requires:
+                      - lwc-app-build-and-run
