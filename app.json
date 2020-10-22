@@ -1,0 +1,12 @@
+{
+    "name": "LWC test pipeline CI",
+    "scripts": {
+        "test-setup": "yarn add jest",
+        "test": "node_modules/.bin/jest"
+    },
+    "environments": {
+        "test": {
+            "env": {}
+        }
+    }
+}

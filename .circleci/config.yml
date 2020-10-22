@@ -1,0 +1,163 @@
+version: 2.1
+executors:
+  node-executor:
+    docker:
+      - image: circleci/node:12.18.3
+  terraform-executor:
+    docker:
+      - image: hashicorp/terraform:light
+commands:
+  install-npm-dependencies:
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore NPM cache
+          keys:
+            - release-deps-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install Dependencies
+          command: npm install
+      - save_cache:
+          name: Save NPM cache
+          key: release-deps-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+  setup-terraform:
+    steps:
+      - run:
+          name: Apply terraform provisioner configuration
+          command: |
+            terraform init
+            terraform apply -var heroku_api_key=$HEROKU_API_KEY -var heroku_account_email=$HEROKU_EMAIL_ACCOUNT --auto-approve
+  install-heroku:
+    steps:
+      - run:
+          name: Install heroku and setup login
+          command: |
+            curl https://cli-assets.heroku.com/install.sh | sh
+  setup-creds:
+    steps:
+      - run:
+          name: Setup Heroku credentials
+          command: |
+            cat \<<EOF > ~/.netrc
+             machine git.heroku.com
+             login $HEROKU_EMAIL_ACCOUNT
+             password $HEROKU_API_KEY
+            EOF
+  test-heroku:
+    steps:
+      - run:
+          name: Run Heroku command
+          command: heroku apps
+  setup-heroku:
+    steps:
+      - install-heroku
+      - setup-creds
+      - test-heroku
+  dev-deploy:
+    steps:
+      - run:
+          name: Install app to LWC develop environment
+          command: |
+            heroku git:remote -a lwc-app-dev
+            git push heroku master
+  stage-promotion:
+    steps:
+      - run:
+          name: Promote dev changes to stage
+          command: |
+            heroku pipelines:promote -a lwc-app-dev
+  prod-promotion:
+    steps:
+      - run:
+          name: Promote dev changes to stage
+          command: |
+            heroku pipelines:promote -a lwc-app-staging
+  run-smoke-tests:
+    steps:
+      - run:
+          name: Running smoke tests
+          command: |
+            sleep 5
+  run-e2e-tests:
+    steps:
+      - run:
+          name: Running E2E tests
+          command: |
+            sleep 5
+
+
+jobs:
+  lwc-app-build-and-run:
+    executor: node-executor
+    steps:
+      - checkout
+      - install-npm-dependencies
+      - run:
+          name: 'Building lwc-app'
+          command: npm run build
+      - run:
+          name: 'Running lwc-app'
+          command: npm run serve
+          background: true
+  lwc-app-test:
+    executor: node-executor
+    steps:
+      - checkout
+      - install-npm-dependencies
+      - run:
+          name: Run Unit tests
+          command: ./node_modules/.bin/jest
+  setup-provisioner-environment:
+    executor: terraform-executor
+    steps:
+      - checkout
+      - setup-terraform
+  lwc-dev-deploy:
+    executor: node-executor
+    steps:
+      - setup-heroku
+      - checkout
+      - dev-deploy
+      - run-smoke-tests
+  lwc-stage-deploy:
+    executor: node-executor
+    steps:
+      - setup-heroku
+      - stage-promotion
+      - run-e2e-tests
+  lwc-prod-deploy:
+    executor: node-executor
+    steps:
+      - setup-heroku
+      - prod-promotion
+  release-to-prod:
+    executor: node-executor
+    steps:
+      - run: echo "Release to Prod Approved"
+
+workflows:
+  version: 2
+  lwc-build-execute:
+    jobs:
+      - lwc-app-build-and-run
+      - lwc-app-test:
+          requires:
+            - lwc-app-build-and-run
+      - setup-provisioner-environment:
+          requires:
+            - lwc-app-test
+      - lwc-dev-deploy:
+          requires:
+            - setup-provisioner-environment
+      - lwc-stage-deploy:
+          requires:
+            - lwc-dev-deploy
+      - release-to-prod:
+          type: approval
+          requires:
+            - lwc-stage-deploy
+      - lwc-prod-deploy:
+          requires:
+            - release-to-prod

@@ -1,6 +1,9 @@
-variable "heroku_email_account" {
-    default="dpalla@salesforce.com"
-}
-variable "heroku_api_key" {
-    default="d17291cf-219d-4f82-9295-6ed8fd27daab"
-}
+variable "heroku_account_email" {}
+variable "heroku_api_key" {}
+variable "heroku_pipeline_name" {}
+variable "heroku_develop_app" {}
+variable "heroku_staging_app" {}
+variable "heroku_production_app" {}
+variable "heroku_region" {}
+
+
