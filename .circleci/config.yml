@@ -74,12 +74,19 @@ commands:
           name: Promote dev changes to stage
           command: |
             heroku pipelines:promote -a lwc-app-staging
-  run-puppeteer-tests:
+  run-smoke-tests:
     steps:
       - run:
-          name: Running puppeteer tests
+          name: Running smoke tests
           command: |
             sleep 5
+  run-e2e-tests:
+    steps:
+      - run:
+          name: Running E2E tests
+          command: |
+            sleep 5
+
 
 jobs:
   lwc-app-build-and-run:
@@ -113,13 +120,13 @@ jobs:
       - setup-heroku
       - checkout
       - dev-deploy
-      - run-puppeteer-tests
+      - run-smoke-tests
   lwc-stage-deploy:
     executor: node-executor
     steps:
       - setup-heroku
       - stage-promotion
-      - run-puppeteer-tests
+      - run-e2e-tests
   lwc-prod-deploy:
     executor: node-executor
     steps:
