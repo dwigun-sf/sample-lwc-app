@@ -144,7 +144,9 @@ jobs:
             - checkout
             - run:
                   name: Run coverage
-                  command: npm run test:unit:coverage
+                  command: |
+                      npm install
+                      npm run test:unit:coverage
                   when: always
             - run:
                   name: Setup Code Climate test-reporter
