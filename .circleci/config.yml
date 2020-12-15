@@ -135,28 +135,39 @@ jobs:
         executor: node-executor
         steps:
             - run: echo "Release to Prod Approved"
+    code-climate-test-coverage:
+        environment:
+            - CC_TEST_REPORTER_ID: f9ad0e3cff5fb7b453f473d1acea5b2226b0f955417536c0b30959890895e95a
+        docker:
+            - image: circleci/node:12.13.0
+        steps:
+            - run:
+                  name: Run coverage
+                  command: npm run cover
+                  when: always
+            - run:
+                  name: Setup Code Climate test-reporter
+                  command: |
+                      # download test reporter as a static binary
+                      curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+                      chmod +x ./cc-test-reporter
+                      ./cc-test-reporter before-build
+                  when: always
+            - run:
+                  name: Send coverage report to Code Climate
+                  command:
+                      # nyc report requires that nyc has already been run,
+                      # which creates the .nyc_output folder containing necessary data
+                      ./cc-test-reporter after-build -t lcov
+                  when: always
+            # Upload results
+            - store_artifacts: # upload test coverage as artifact
+                  path: ./coverage/lcov.info
+                  prefix: tests
 
 workflows:
     version: 2
     lwc-build-execute:
         jobs:
             - lwc-app-build-and-run
-            - lwc-app-test:
-                  requires:
-                      - lwc-app-build-and-run
-            - setup-provisioner-environment:
-                  requires:
-                      - lwc-app-test
-            - lwc-dev-deploy:
-                  requires:
-                      - setup-provisioner-environment
-            - lwc-stage-deploy:
-                  requires:
-                      - lwc-dev-deploy
-            - release-to-prod:
-                  type: approval
-                  requires:
-                      - lwc-stage-deploy
-            - lwc-prod-deploy:
-                  requires:
-                      - release-to-prod
+            - code-climate-test-coverage
