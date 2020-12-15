@@ -10,6 +10,6 @@ export default class App extends LightningElement {
         return this.state === 'list';
     }
     get isStateDetails() {
-        return this.state === 'detaidls';
+        return this.state === 'details';
     }
 }
