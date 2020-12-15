@@ -143,7 +143,7 @@ jobs:
         steps:
             - run:
                   name: Run coverage
-                  command: npm run cover
+                  command: jest --coverage
                   when: always
             - run:
                   name: Setup Code Climate test-reporter
@@ -169,5 +169,5 @@ workflows:
     version: 2
     lwc-build-execute:
         jobs:
-            - lwc-app-build-and-run
+            #- lwc-app-build-and-run
             - code-climate-test-coverage
