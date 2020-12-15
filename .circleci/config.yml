@@ -142,10 +142,12 @@ jobs:
             - image: circleci/node:12.13.0
         steps:
             - run:
+                  name: install jest
+                  command: npm install jest
+                  when: always
+            - run:
                   name: Run coverage
-                  command: |
-                      npm install jest
-                      jest --coverage
+                  command: jest --coverage
                   when: always
             - run:
                   name: Setup Code Climate test-reporter
