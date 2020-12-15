@@ -36,4 +36,12 @@ describe('my-app', () => {
 
         expect(greetingEls.length).toBe(0);
     });
+
+    test('Adds 2 + 2 to equal 4', () => {
+        expect(4).toBe(4);
+    });
+
+    test('Adds 2 + 2 to equals 4', () => {
+        expect(4).toBe(4);
+    });
 });
