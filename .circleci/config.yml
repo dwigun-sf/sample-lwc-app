@@ -173,4 +173,4 @@ workflows:
     lwc-build-execute:
         jobs:
             #- lwc-app-build-and-run
-            - code-climate-test-coverage
+            #- code-climate-test-coverage
